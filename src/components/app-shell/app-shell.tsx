@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Bell,
+  CheckCircle2,
   Command,
   PanelLeftClose,
   PanelLeftOpen,
@@ -19,12 +21,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LockedGenerateButton } from "@/components/domain/discovery-gate";
 import { workspaceRoutes } from "@/lib/product-data";
 import { useProjectQuery } from "@/lib/queries";
 import { useDesignWorkspaceStore } from "@/stores/design-workspace-store";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { LockedGenerateButton } from "@/components/domain/discovery-gate";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
@@ -69,7 +70,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       className={cn(
                         "group flex h-9 items-center gap-3 rounded-xl px-3 text-sm text-white/50 transition-colors hover:bg-white/[0.055] hover:text-white/86",
-                        active && "bg-white/[0.075] text-white"
+                        active && "bg-white/[0.075] text-white shadow-[inset_0_0_0_1px_rgba(165,243,252,0.08)]"
                       )}
                     >
                       <Icon className={cn("size-4 shrink-0", active && "text-cyan-100")} />
@@ -82,15 +83,47 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="mt-auto rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
-            <div className="flex items-center gap-2">
-              <Command className="size-4 text-cyan-100/80" />
+          <div className="mt-auto space-y-2">
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
+              <div className="flex items-center gap-2">
+                <Command className="size-4 text-cyan-100/80" />
+                {open && (
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium text-white/78">
+                      Command palette
+                    </p>
+                    <p className="truncate font-mono text-[11px] text-white/34">Cmd K</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.028] p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-cyan-100/78" />
+                {open && (
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium text-white/76">
+                      {project?.name ?? "Active project"}
+                    </p>
+                    <p className="truncate text-[11px] text-white/34">
+                      Pro workspace - secure storage
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-2">
+              <Avatar className="size-8 border border-white/[0.08]">
+                <AvatarFallback className="bg-white/[0.07] text-xs text-white">
+                  MS
+                </AvatarFallback>
+              </Avatar>
               {open && (
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-medium text-white/78">
-                    Command palette
-                  </p>
-                  <p className="truncate font-mono text-[11px] text-white/34">⌘ K</p>
+                  <p className="truncate text-xs font-medium text-white/78">Mira Studio</p>
+                  <p className="truncate text-[11px] text-cyan-100/58">Architecture Pro</p>
                 </div>
               )}
             </div>
@@ -125,11 +158,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <button
               type="button"
-              className="ml-auto hidden h-9 min-w-[310px] items-center gap-2 rounded-xl border border-white/[0.08] bg-black/18 px-3 text-left text-sm text-white/38 transition-colors hover:bg-white/[0.045] hover:text-white/58 lg:flex"
+              className="ml-auto hidden h-9 min-w-[360px] items-center gap-2 rounded-xl border border-white/[0.08] bg-black/18 px-3 text-left text-sm text-white/38 transition-colors hover:bg-white/[0.045] hover:text-white/58 lg:flex"
             >
               <Search className="size-4" />
-              <span className="flex-1">Search rooms, materials, comments</span>
-              <span className="font-mono text-[11px] text-white/28">⌘K</span>
+              <span className="flex-1">Search rooms, materials, layouts, comments...</span>
+              <span className="font-mono text-[11px] text-white/28">Cmd K</span>
             </button>
             <Button
               variant="ghost"
