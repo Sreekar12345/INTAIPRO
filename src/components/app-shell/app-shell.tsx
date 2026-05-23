@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Bell,
-  CheckCircle2,
-  Command,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
@@ -82,52 +80,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-
-          <div className="mt-auto space-y-2">
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-3">
-              <div className="flex items-center gap-2">
-                <Command className="size-4 text-cyan-100/80" />
-                {open && (
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-white/78">
-                      Command palette
-                    </p>
-                    <p className="truncate font-mono text-[11px] text-white/34">Cmd K</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.028] p-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="size-4 text-cyan-100/78" />
-                {open && (
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-white/76">
-                      {project?.name ?? "Active project"}
-                    </p>
-                    <p className="truncate text-[11px] text-white/34">
-                      Pro workspace - secure storage
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-2">
-              <Avatar className="size-8 border border-white/[0.08]">
-                <AvatarFallback className="bg-white/[0.07] text-xs text-white">
-                  MS
-                </AvatarFallback>
-              </Avatar>
-              {open && (
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-medium text-white/78">Mira Studio</p>
-                  <p className="truncate text-[11px] text-cyan-100/58">Architecture Pro</p>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </motion.aside>
 
