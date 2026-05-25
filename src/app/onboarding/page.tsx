@@ -34,7 +34,7 @@ export default function OnboardingPage() {
           })}
         </div>
         <Button asChild className="mt-8 w-fit rounded-xl bg-cyan-100 text-black hover:bg-cyan-50">
-          <Link href="/projects">
+          <Link href="/dashboard">
             Enter workspace
             <ArrowRight className="size-4" />
           </Link>

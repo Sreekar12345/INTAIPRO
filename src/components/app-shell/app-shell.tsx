@@ -2,17 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Bell,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
   Sparkles,
+  UserRound,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -28,8 +38,11 @@ import { cn } from "@/lib/utils";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const activeProjectId = useDesignWorkspaceStore((state) => state.activeProjectId);
   const { data: project } = useProjectQuery(activeProjectId);
+  const userEmail = "atelier@studio.com";
+  const initials = "AO";
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden bg-[#080909] text-white">
@@ -124,11 +137,47 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               <Bell />
             </Button>
-            <Avatar className="size-8 border border-white/[0.08]">
-              <AvatarFallback className="bg-white/[0.07] text-xs text-white">
-                MS
-              </AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full p-0 hover:bg-white/[0.06]"
+                  aria-label="Account menu"
+                >
+                  <Avatar className="size-8 border border-white/[0.08]">
+                    <AvatarFallback className="bg-white/[0.07] text-xs text-white">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-64 border border-white/[0.1] bg-[#111212]/96 p-2 text-white shadow-2xl shadow-black/30 backdrop-blur-xl"
+              >
+                <DropdownMenuLabel className="px-2 py-2">
+                  <span className="flex items-center gap-2 text-sm text-white">
+                    <UserRound className="size-4 text-cyan-100/78" />
+                    Atelier account
+                  </span>
+                  <span className="mt-1 block truncate text-xs font-normal text-white/42">
+                    {userEmail}
+                  </span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/[0.08]" />
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    router.push("/");
+                  }}
+                  className="cursor-pointer rounded-lg px-2 py-2 text-white/66 focus:bg-white/[0.07] focus:text-white"
+                >
+                  <LogOut className="size-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <LockedGenerateButton>Generate</LockedGenerateButton>
           </div>
         </header>

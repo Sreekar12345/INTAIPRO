@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -131,11 +132,14 @@ export function LandingPage() {
       <AudienceSection />
       <CaseStudySection />
       <FinalCtaSection />
+      <LandingFooter />
     </main>
   );
 }
 
 function HeroSection() {
+  const router = useRouter();
+
   return (
     <section className="relative min-h-[88svh] overflow-hidden border-b border-white/[0.08]">
       <Image
@@ -168,11 +172,13 @@ function HeroSection() {
             client discovery, layout intelligence, material systems, AI renders, and documentation.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="h-11 rounded-xl bg-white px-5 text-black hover:bg-cyan-50">
-              <Link href="/onboarding">
-                Start New Project
-                <ArrowRight className="size-4" />
-              </Link>
+            <Button
+              type="button"
+              onClick={() => router.push("/signup")}
+              className="h-11 rounded-xl bg-white px-5 text-black hover:bg-cyan-50"
+            >
+              Get Started
+              <ArrowRight className="size-4" />
             </Button>
             <Button
               asChild
@@ -198,6 +204,8 @@ function HeroSection() {
 }
 
 function LandingNav() {
+  const router = useRouter();
+
   return (
     <header className="absolute left-0 right-0 top-0 z-20">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
@@ -218,14 +226,19 @@ function LandingNav() {
         </nav>
         <div className="flex items-center gap-2">
           <Button
-            asChild
+            type="button"
             variant="ghost"
+            onClick={() => router.push("/login")}
             className="hidden rounded-xl text-white/62 hover:bg-white/[0.06] hover:text-white sm:inline-flex"
           >
-            <Link href="/login">Sign in</Link>
+            Sign In
           </Button>
-          <Button asChild className="rounded-xl bg-white text-black hover:bg-cyan-50">
-            <Link href="/projects">Open App</Link>
+          <Button
+            type="button"
+            onClick={() => router.push("/signup")}
+            className="rounded-xl bg-white text-black hover:bg-cyan-50"
+          >
+            Get Started
           </Button>
         </div>
       </div>
@@ -581,6 +594,8 @@ function CaseStudySection() {
 }
 
 function FinalCtaSection() {
+  const router = useRouter();
+
   return (
     <section className="relative overflow-hidden border-t border-white/[0.08] px-5 py-24 sm:px-8 lg:px-10">
       <div className="absolute inset-0 calm-grid opacity-60" />
@@ -593,22 +608,43 @@ function FinalCtaSection() {
           Build a project around spatial understanding, client discovery, layout intelligence, render generation, and documentation.
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Button asChild className="h-11 rounded-xl bg-white px-5 text-black hover:bg-cyan-50">
-            <Link href="/onboarding">
-              Start Designing
-              <ArrowRight className="size-4" />
-            </Link>
+          <Button
+            type="button"
+            onClick={() => router.push("/signup")}
+            className="h-11 rounded-xl bg-white px-5 text-black hover:bg-cyan-50"
+          >
+            Get Started
+            <ArrowRight className="size-4" />
           </Button>
           <Button
             asChild
             variant="outline"
             className="h-11 rounded-xl border-white/[0.14] bg-white/[0.035] px-5 text-white/72 hover:bg-white/[0.07] hover:text-white"
           >
-            <Link href="/projects">Book Demo</Link>
+            <Link href="#workflow">Explore Workflow</Link>
           </Button>
         </div>
       </div>
     </section>
+  );
+}
+
+function LandingFooter() {
+  return (
+    <footer className="border-t border-white/[0.08] px-5 py-8 sm:px-8 lg:px-10">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm text-white/38 sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/" className="flex items-center gap-2 text-white/72">
+          <Compass className="size-4 text-cyan-100/76" />
+          Atelier OS
+        </Link>
+        <div className="flex flex-wrap gap-4">
+          <a href="#workflow" className="transition-colors hover:text-white">Workflow</a>
+          <a href="#analysis" className="transition-colors hover:text-white">Analysis</a>
+          <a href="#discovery" className="transition-colors hover:text-white">Discovery</a>
+          <a href="#exports" className="transition-colors hover:text-white">Outputs</a>
+        </div>
+      </div>
+    </footer>
   );
 }
 

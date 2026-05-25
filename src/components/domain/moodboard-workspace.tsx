@@ -1,6 +1,10 @@
 "use client";
 
-import { Pin, SplitSquareVertical, Star } from "lucide-react";
+import {
+  LucidePin as Pin,
+  LucideSplitSquareVertical as SplitSquareVertical,
+  LucideStar as Star,
+} from "lucide-react";
 import {
   GenerationLock,
   LockedGenerateButton,
