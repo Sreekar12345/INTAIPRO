@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -10,6 +10,7 @@ import {
   Check,
   CircleDot,
   Compass,
+  FileText,
   FileUp,
   Grid2X2,
   HelpCircle,
@@ -31,7 +32,10 @@ import { useRoomsQuery } from "@/lib/queries";
 import { useDesignWorkspaceStore, type UploadPhase } from "@/stores/design-workspace-store";
 import { cn } from "@/lib/utils";
 
-const acceptedFormats = ["PDF", "DWG", "DXF", "PNG", "JPG", "HEIC"];
+const acceptedFormats = ["PDF", "PNG", "JPG", "JPEG"];
+const acceptedFileTypes = ".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf";
+const acceptedMimeTypes = new Set(["image/jpeg", "image/png", "application/pdf"]);
+const acceptedExtensions = new Set(["jpg", "jpeg", "png", "pdf"]);
 
 const guidanceCards = [
   {
@@ -107,6 +111,7 @@ export function UploadWorkspace() {
   const setUploadPhase = useDesignWorkspaceStore((state) => state.setUploadPhase);
   const { data: rooms = [] } = useRoomsQuery();
   const [dragActive, setDragActive] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const timeoutRef = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   const hasPlan = uploadPhase !== "empty";
   const completedSignals = uploadPhase === "detected" ? inspectorSignals.length : uploadPhase === "parsing" ? 3 : 0;
@@ -118,6 +123,23 @@ export function UploadWorkspace() {
       setTimeout(() => setUploadPhase("parsing"), 760),
       setTimeout(() => setUploadPhase("detected"), 1900),
     ];
+  };
+
+  const handleFileSelected = (file: File) => {
+    if (!isAcceptedFloorPlanFile(file)) {
+      console.warn("Unsupported file selected:", file);
+      return;
+    }
+
+    console.log("Selected floor plan file:", file);
+    setSelectedFile(file);
+    startUpload();
+  };
+
+  const handleReset = () => {
+    setSelectedFile(null);
+    timeoutRef.current.forEach(clearTimeout);
+    setUploadPhase("empty");
   };
 
   useEffect(() => {
@@ -142,16 +164,17 @@ export function UploadWorkspace() {
           <WorkspaceHeader
             status={headerStatus}
             hasPlan={hasPlan}
-            onReset={() => setUploadPhase("empty")}
+            onReset={handleReset}
           />
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
             <main className="min-w-0 space-y-4">
               <ArchitecturalDropzone
                 phase={uploadPhase}
+                selectedFile={selectedFile}
                 dragActive={dragActive}
                 onDragActive={setDragActive}
-                onUpload={startUpload}
+                onFileSelected={handleFileSelected}
               />
               <SecurityStrip />
               <GuidelinesPanel />
@@ -255,17 +278,43 @@ function WorkflowIndicator() {
 
 function ArchitecturalDropzone({
   phase,
+  selectedFile,
   dragActive,
   onDragActive,
-  onUpload,
+  onFileSelected,
 }: {
   phase: UploadPhase;
+  selectedFile: File | null;
   dragActive: boolean;
   onDragActive: (value: boolean) => void;
-  onUpload: () => void;
+  onFileSelected: (file: File) => void;
 }) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const phaseState = phaseCopy[phase];
   const processing = phase === "uploading" || phase === "parsing";
+  const hasSelectedFile = Boolean(selectedFile);
+
+  const openFileManager = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      onFileSelected(file);
+    }
+
+    event.target.value = "";
+  };
+
+  const handleDroppedFiles = (files: FileList | null) => {
+    const file = files?.[0];
+
+    if (file) {
+      onFileSelected(file);
+    }
+  };
 
   return (
     <section
@@ -290,9 +339,16 @@ function ArchitecturalDropzone({
       onDrop={(event) => {
         event.preventDefault();
         onDragActive(false);
-        onUpload();
+        handleDroppedFiles(event.dataTransfer.files);
       }}
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={acceptedFileTypes}
+        className="sr-only"
+        onChange={handleInputChange}
+      />
       <div className="absolute inset-0 spatial-grid opacity-70" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,rgba(165,243,252,0.1),transparent_32%)]" />
       <div className="scan-beam absolute left-10 right-10 top-10 h-24 rounded-full bg-gradient-to-b from-cyan-100/0 via-cyan-100/12 to-cyan-100/0" />
@@ -324,20 +380,26 @@ function ArchitecturalDropzone({
         </p>
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
+            type="button"
             className="h-11 rounded-xl bg-cyan-100 px-5 text-black hover:bg-cyan-50"
-            onClick={onUpload}
+            onClick={openFileManager}
           >
             <Upload className="size-4" />
-            Browse files
+            Upload Floor Plan
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="h-11 rounded-xl border-white/[0.1] bg-white/[0.025] px-5 text-white/62 hover:bg-white/[0.06] hover:text-white"
-            onClick={onUpload}
+            onClick={openFileManager}
           >
-            Use sample plan
+            Browse files
           </Button>
         </div>
+
+        {hasSelectedFile && selectedFile && (
+          <SelectedFileCard file={selectedFile} phase={phase} />
+        )}
 
         <div className="mt-8 flex max-w-xl flex-wrap justify-center gap-2">
           {acceptedFormats.map((format) => (
@@ -357,6 +419,76 @@ function ArchitecturalDropzone({
       </div>
     </section>
   );
+}
+
+function SelectedFileCard({ file, phase }: { file: File; phase: UploadPhase }) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const isImage = file.type.startsWith("image/");
+  const fileSize = formatFileSize(file.size);
+  const status =
+    phase === "detected"
+      ? "Ready for backend upload"
+      : phase === "parsing"
+        ? "Preparing preview"
+        : phase === "uploading"
+          ? "File selected"
+          : "Ready for backend upload";
+
+  useEffect(() => {
+    if (!isImage) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file, isImage]);
+
+  return (
+    <div className="mt-8 w-full max-w-xl rounded-2xl border border-cyan-100/18 bg-black/34 p-3 text-left shadow-2xl shadow-black/24 backdrop-blur-xl">
+      <div className="flex gap-3">
+        <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.045]">
+          {previewUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previewUrl}
+              alt={file.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <FileText className="size-6 text-cyan-100/80" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-white">{file.name}</p>
+          <p className="mt-1 text-xs text-white/42">
+            {file.type || "Selected file"} · {fileSize}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-cyan-100/18 bg-cyan-100/[0.06] px-2.5 py-1 text-xs text-cyan-50/82">
+              {status}
+            </span>
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.035] px-2.5 py-1 text-xs text-white/42">
+              Backend upload pending
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatFileSize(size: number) {
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function isAcceptedFloorPlanFile(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  return acceptedMimeTypes.has(file.type) || Boolean(extension && acceptedExtensions.has(extension));
 }
 
 function FormatPill({ label }: { label: string }) {
